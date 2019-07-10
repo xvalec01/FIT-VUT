@@ -1,2 +1,2 @@
 # FIT-VUT
-Školní projekty (School projects)
+Školní projekty (University projects)
