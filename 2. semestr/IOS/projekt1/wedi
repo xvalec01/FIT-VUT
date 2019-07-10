@@ -1,0 +1,222 @@
+#!/bin/sh
+
+#############################
+#		 					#
+#		  xvalec01			#
+#       David Valecký		#
+#			wedi 			#
+#		Projekt IOS			#
+#							#
+#############################
+
+
+POSIXLY_CORRECT=yes
+
+
+if [ -z "$WEDI_RC" ]; then
+	echo "Path to wedirc is not set." >&2
+	exit 1
+fi
+
+if ! [ -f "$WEDI_RC" ]; then 
+	mkdir -p "$(dirname "$WEDI_RC")" && touch "$WEDI_RC"
+fi
+
+if [ -z "$EDITOR" ]; then
+	if [ -z "$VISUAL" ]; then
+		edit_tool="vi"
+	else
+		edit_tool=$VISUAL
+	fi
+else
+	edit_tool=$EDITOR
+fi
+
+path=$(realpath .)
+param="$1"
+
+edited_to_file()
+{
+	if [ -f "$param" ]; then
+		printf "%s;%s\n" "$(realpath "$param")" "$(date +%F)" >> $WEDI_RC
+	fi
+}
+
+if [ "$#" -gt "3" ]; then
+	echo "Too many arguments" >&2
+	exit 1
+fi
+
+if [ "$#" = "0" ]; then
+	param="$(grep "$path/[^/]*$" "$WEDI_RC" | tail -1 | cut -d';' -f1)"
+		if [ ! -f "$param" ] || [ -z "$param" ]; then 
+			echo "No param for editing" >&2
+			exit 1
+		fi
+	"$edit_tool" "$param"
+	edited_to_file
+fi
+
+if [ "$#" = "1" ] && [ ! "$1" = "-m" ] && [ ! "$1" = "-l" ] && [ ! "$1" = "-a" ] && [ ! "$1" = "-b" ]; then
+	if [ -f "$1" ]; then
+		"$edit_tool" "$param"
+		edited_to_file
+	elif [ -d "$1" ]; then
+		path=$(realpath "$1")
+		param="$(grep "$path/[^/]*$" "$WEDI_RC" | tail -1 | cut -d';' -f1)"
+		if [ ! -f "$param" ] || [ -z "$param" ]; then 
+			echo "No param for editing" >&2
+			exit 1
+		fi
+		"$edit_tool" "$param"
+		edited_to_file
+	elif ! [ -f "$1" ]; then
+		echo "$1 is not file" >&2
+		exit 1
+	elif ! [ -d "$1" ]; then
+		echo "$1 is not directory" >&2
+		exit 1
+	fi
+fi
+	
+if [ "$1" = "-m" ]; then
+	if [ "$#" = "1" ]; then
+		param="$(grep "$path/[^/]*$" "$WEDI_RC" | sort | uniq -c | sort | tail -1 | cut -d';' -f1 | awk '{print $2}')"
+		if [ ! -f "$param" ] || [ -z "$param" ]; then 
+			echo "No param for editing" >&2
+			exit 1
+		fi
+		"$edit_tool" "$param"
+		edited_to_file
+	elif [ "$#" = "2" ]; then
+		if [ -d "$2" ]; then
+			path=$(realpath "$2")
+			param="$(grep "$path/[^/]*$" "$WEDI_RC" | sort | uniq -c | sort | tail -1 | cut -d';' -f1 | awk '{print $2}')"
+			if [ ! -f "$param" ] || [ -z "$param" ]; then 
+				echo "No param for editing" >&2
+				exit 1
+			fi
+			"$edit_tool" "$param"
+			edited_to_file
+		else
+			echo "$2 is not directory" >&2
+			exit 1
+		fi
+	else
+		echo "Too many arguments" >&2
+		exit 1
+	fi
+fi
+
+
+if [ "$1" = "-l" ]; then
+	if [ "$#" = "1" ]; then
+		param="$(grep "$path/[^/]*$" "$WEDI_RC" | sort | uniq | cut -d';' -f1 | uniq )"
+		if [ -z "$param" ]; then 
+			echo "No files was edited in this directory" >&2
+			exit 1
+		fi
+		echo "$param"
+	elif [ "$#" = "2" ]; then
+		if [ -d "$2" ]; then
+			path=$(realpath "$2")
+			param="$(grep "$path/[^/]*$" "$WEDI_RC" | sort | uniq | cut -d';' -f1 | uniq )"
+			if [ -z "$param" ]; then 
+				echo "No files was edited in this ($2) directory" >&2
+				exit 1
+			fi
+			echo "$param"
+		else
+			echo "$2 is not directory" >&2
+			exit 1
+		fi
+	else
+		echo "Too many arguments" >&2
+		exit 1
+	fi
+fi
+
+
+
+
+if [ "$1" = "-a" ] && ([ "$#" = "2" ] || [ "$#" = "3" ]) ; then
+	datum=$(date --date="$2" +%s)
+	if [ "$?" = "1" ]; then
+		echo "Špatný formát datumu. " >&2
+		exit 1
+	elif [ "$#" = "2" ]; then
+		all_datum="$(grep "$path/[^/]*$" "$WEDI_RC" | sort -g | uniq )"
+		printf "%s\n" "$all_datum" |
+		while IFS= read -r line;
+		do
+			found=$(echo "$line" | cut -d';' -f1 | rev | cut -d '/' -f 2-  | rev )
+			if [ "$found" = "$path" ]; then
+				found=$(echo "$line" | cut -d';' -f2 | date +%s )
+				if [ "$found" -gt "$datum" ]; then
+					found=$(echo "$line" | sort | uniq | cut -d';' -f1 | uniq )	
+					echo "$found"
+				fi
+			fi
+		done
+
+	elif [ "$#" = "3" ] && [ -d "$3" ]; then
+		path=$(realpath "$3")
+		all_datum="$(grep "$path/[^/]*$" "$WEDI_RC" | sort -g | uniq )"
+		printf "%s\n" "$all_datum" |
+		while IFS= read -r line;
+		do
+			found=$(echo "$line" | cut -d';' -f1 | rev | cut -d '/' -f 2-  | rev )
+			if [ "$found" = "$path" ]; then
+				found=$(echo "$line" | cut -d';' -f2 | date +%s )
+				if [ "$found" -gt "$datum" ]; then
+					found=$(echo "$line" | sort | uniq | cut -d';' -f1 | uniq )	
+					echo "$found"
+				fi
+			fi
+		done
+	else
+		echo "Wrong number of arguments" >&2
+		exit 1
+	fi
+fi
+
+if [ "$1" = "-b" ] && ([ "$#" = "2" ] || [ "$#" = "3" ]); then
+	datum=$(date --date="$2" +%s)
+	if [ "$?" = "1" ]; then
+		echo "Špatný formát datumu. " >&2
+		exit 1
+	elif [ "$#" = "2" ]; then
+		all_datum="$(grep "$path/[^/]*$" "$WEDI_RC" | sort -g | uniq )"
+		printf "%s\n" "$all_datum" |
+		while IFS= read -r line;
+		do
+			found=$(echo "$line" | cut -d';' -f1 | rev | cut -d '/' -f 2-  | rev )
+			if [ "$found" = "$path" ]; then
+				found=$(echo "$line" | cut -d';' -f2 | date +%s )
+				if [ "$found" -lt "$datum" ]; then
+					found=$(echo "$line" | sort | uniq | cut -d';' -f1 | uniq )	
+					echo "$found"
+				fi
+			fi
+		done
+
+	elif [ "$#" = "3" ] && [ -d "$3" ]; then
+		path=$(realpath "$3")
+		all_datum="$(grep "$path/[^/]*$" "$WEDI_RC" | sort -g | uniq )"
+		printf "%s\n" "$all_datum" |
+		while IFS= read -r line;
+		do
+			found=$(echo "$line" | cut -d';' -f1 | rev | cut -d '/' -f 2-  | rev )
+			if [ "$found" = "$path" ]; then
+				found=$(echo "$line" | cut -d';' -f2 | date +%s )
+				if [ "$found" -lt "$datum" ]; then
+					found=$(echo "$line" | sort | uniq | cut -d';' -f1 | uniq )	
+					echo "$found"
+				fi
+			fi
+		done
+	else 
+		echo "Wrong number of arguments" >&2
+		exit 1
+	fi
+fi
