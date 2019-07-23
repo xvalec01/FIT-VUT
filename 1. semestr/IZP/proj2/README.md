@@ -4,7 +4,7 @@ Mé rešení slouží pouze k inspiraci. Hodnoceno 5,23/7.
 ## Motivační příklad
 Mějme přístroj obsahující sensor náklonu a procesor umožňující jednoduché operace nad čísly s plovoucí řádovou čárkou. Přístroj chce uživatel používat pro měření vzdálenosti a výšky velkých objektů (budova, komín, strom).
 
-![Diagram](img/Diagram.png?raw=true "Diagram")
+![Diagram](Pictures/Diagram.png?raw=true "Diagram")
 
 ## Zadání projektu
 Implementujte funkce nutné pro výpočet vzdálenosti a výšky pomocí úhlu náklonu měřeného přístroje. Výpočet proveďte pouze pomocí matematických operací +,-,*,/. Implementujte výpočet vzdálenosti a výšky měřeného objektu.
@@ -65,7 +65,7 @@ double taylor_tan(double x, unsigned int n);
 ```
 kde x udává úhel a n rozvoj polynomu (počet členů). Taylorův polynom pro funkci tangens vypadá následovně:
 
-![Taylor_tan](img/Taylor_tan.png?raw=true "Taylor_tan")
+![Taylor_tan](Pictures/Taylor_tan.png?raw=true "Taylor_tan")
 
 přičemž řada čitatelů ve zlomcích koeficientů je [zde](https://oeis.org/A002430) a řada jmenovatelů ve zlomcích koeficientů je [zde](https://oeis.org/A156769). Ve svém programu použijte pouze 13 prvních koeficientů.
 
@@ -77,11 +77,11 @@ double cfrac_tan(double x, unsigned int n);
 ```
 kde x udává úhel a n rozvoj zřetězeného zlomku:
 
-![Tan1](img/Tan1.png?raw=true "Tan1")
+![Tan1](Pictures/Tan1.png?raw=true "Tan1")
 
 nebo
 
-![Tan2](img/Tan2.png?raw=true "Tan2")
+![Tan2](Pictures/Tan2.png?raw=true "Tan2")
 
 ##### Porovnání přesnosti výpočtu tangens
 Porovnání iteračních a zabudovaných výpočtů realizujte pro zadaný počet iterací. Výstup porovnání bude v podobě řádků obsahující následující:
