@@ -1,1 +1,2 @@
-# IZP - Základy programování / Introduction to Programming Systems
+# IZP - Introduction to Programming Systems
+Programming language : **C**
