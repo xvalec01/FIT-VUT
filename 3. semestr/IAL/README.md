@@ -1,2 +1,2 @@
 # Algorithms
-Programming language: C
+Programming language: **C**
